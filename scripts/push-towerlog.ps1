@@ -4,15 +4,15 @@
   TestFlight build workflow).
 
 .DESCRIPTION
-  1. Uses the extracted towerlog-v1.0.1\towerlog folder as the source of truth.
+  1. Uses the extracted towerlog-v1.0.2\towerlog folder as the source of truth.
   2. Clones MikeGyver-SME/mikegyver-towerlog if needed (else pulls main).
   3. Copies the source in, commits, pushes.
   4. Creates and pushes the version tag -> the "Build and upload TowerLog to
      TestFlight" workflow starts automatically on the tag push.
 
 .PARAMETER SourceDir
-  The extracted source folder. Defaults to <your Downloads folder>\towerlog-v1.0.1\towerlog
-  (resolved via the Windows shell, so relocated Downloads folders work).
+  The extracted source folder. Defaults to E:\Downloads\towerlog-v1.0.2\towerlog
+  when E:\Downloads exists, else your shell Downloads folder.
 
 .PARAMETER RepoDir
   Local clone location. Defaults to source\repos\mikegyver-towerlog under your
@@ -30,16 +30,16 @@
   powershell -ExecutionPolicy Bypass -File .\push-towerlog.ps1 -Tag v1.0.1
 #>
 param(
-    [string]$SourceDir = (Join-Path (& { try { (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path } catch { "$env:USERPROFILE\Downloads" } }) 'towerlog-v1.0.1\towerlog'),
+    [string]$SourceDir = (Join-Path (& { if (Test-Path 'E:\Downloads') { 'E:\Downloads' } else { try { (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path } catch { "$env:USERPROFILE\Downloads" } } }) 'towerlog-v1.0.2\towerlog'),
     [string]$RepoDir   = (Join-Path $env:USERPROFILE 'source\repos\mikegyver-towerlog'),
-    [string]$Tag       = 'v1.0.1'
+    [string]$Tag       = 'v1.0.2'
 )
 
 $ErrorActionPreference = 'Stop'
 $RepoSlug = 'MikeGyver-SME/mikegyver-towerlog'
 
 if (-not (Test-Path $SourceDir)) {
-    throw "Source folder not found: $SourceDir`nExtract towerlog-v1.0.1.zip first."
+    throw "Source folder not found: $SourceDir`nExtract towerlog-v1.0.2.zip first."
 }
 
 # --- 1. Clone or update ------------------------------------------------------
@@ -48,13 +48,16 @@ if (-not (Test-Path (Join-Path $RepoDir '.git'))) {
     git clone "https://github.com/$RepoSlug.git" $RepoDir
 }
 Set-Location $RepoDir
-git rev-parse --verify HEAD 2>$null | Out-Null
-if ($LASTEXITCODE -eq 0) {
-    git checkout --quiet main 2>$null
-    git pull --ff-only
+# NOTE: never probe git with a command that can fail here. With
+# $ErrorActionPreference='Stop', a failing git probe's stderr becomes a
+# terminating error. `git status` is safe even on empty repos.
+$statusOut = git status 2>&1 | Out-String
+if ($statusOut -match 'No commits yet') {
+    # Fresh empty repo: start main locally; the push below creates it on GitHub.
+    git checkout -qb main
 } else {
-    # Fresh empty repo: no commits yet — start main locally; the push below creates it on GitHub.
-    git checkout -qb main 2>$null
+    git checkout --quiet main
+    git pull --ff-only
 }
 
 # --- 2. Copy source in (excluding .git) --------------------------------------
@@ -73,7 +76,9 @@ if ($status) {
     Write-Host "No changes to commit." -ForegroundColor Yellow
 }
 
-if (git rev-parse --verify "refs/tags/$Tag" 2>$null) {
+# `git tag --list` never fails: empty output when the tag is absent.
+$existingTag = git tag --list $Tag
+if ($existingTag) {
     Write-Host "Tag $Tag already exists locally." -ForegroundColor Yellow
 } else {
     git tag $Tag

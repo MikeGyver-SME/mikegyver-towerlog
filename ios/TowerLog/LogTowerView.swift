@@ -33,6 +33,7 @@ struct LogTowerView: View {
                             Label(type.label, systemImage: type.systemImage).tag(type)
                         }
                     }
+                    .foregroundStyle(Brand.gold)
                     TextField("Callsign (optional, e.g. KRLY-LP)", text: $callsign)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
@@ -58,11 +59,13 @@ struct LogTowerView: View {
                                 } label: {
                                     Label("Camera", systemImage: "camera")
                                 }
+                                .foregroundStyle(Brand.gold)
                             }
                             Spacer()
                             PhotosPicker(selection: $pickerItem, matching: .images) {
                                 Label("Photo Library", systemImage: "photo")
                             }
+                            .foregroundStyle(Brand.gold)
                         }
                     }
                 }
@@ -81,10 +84,12 @@ struct LogTowerView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .foregroundStyle(Brand.gold)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .bold()
+                        .foregroundStyle(Brand.gold)
                         .disabled(location.fix == nil)
                 }
             }
@@ -132,6 +137,7 @@ struct LogTowerView: View {
                     .foregroundStyle(.secondary)
                 Button("Retake fix") { location.acquireFix() }
                     .font(.footnote)
+                    .foregroundStyle(Brand.gold)
             }
         } else if location.isAuthorized || location.authorization == .notDetermined {
             HStack {
@@ -150,6 +156,7 @@ struct LogTowerView: View {
                         UIApplication.shared.open(url)
                     }
                 }
+                .foregroundStyle(Brand.gold)
             }
         }
     }
