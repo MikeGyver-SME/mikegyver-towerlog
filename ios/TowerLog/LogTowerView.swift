@@ -23,11 +23,11 @@ struct LogTowerView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("GPS fix") {
+                Section(header: sectionHeader("GPS fix")) {
                     gpsRow
                 }
 
-                Section("Tower") {
+                Section(header: sectionHeader("Tower")) {
                     Picker("Type", selection: $towerType) {
                         ForEach(TowerType.allCases) { type in
                             Label(type.label, systemImage: type.systemImage).tag(type)
@@ -40,7 +40,7 @@ struct LogTowerView: View {
                         .autocorrectionDisabled()
                 }
 
-                Section("Photo (optional)") {
+                Section(header: sectionHeader("Photo (optional)")) {
                     if let photo {
                         Image(uiImage: photo)
                             .resizable()
@@ -67,19 +67,24 @@ struct LogTowerView: View {
                     }
                 }
 
-                Section("Notes") {
+                Section(header: sectionHeader("Notes")) {
                     TextEditor(text: $notes)
                         .frame(minHeight: 110)
                 }
             }
             .navigationTitle("Log Tower")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Brand.navy, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .tint(Brand.gold)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
+                        .bold()
                         .disabled(location.fix == nil)
                 }
             }
@@ -102,6 +107,15 @@ struct LogTowerView: View {
                 CameraPicker(image: $photo)
             }
         }
+    }
+
+    // MARK: - Section header
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.footnote.bold())
+            .foregroundStyle(Brand.gold)
+            .textCase(.uppercase)
     }
 
     // MARK: - GPS row
