@@ -4,14 +4,14 @@
   TestFlight build workflow).
 
 .DESCRIPTION
-  1. Uses the extracted towerlog-v1.0.2\towerlog folder as the source of truth.
+  1. Uses the extracted towerlog-v1.0.3\towerlog folder as the source of truth.
   2. Clones MikeGyver-SME/mikegyver-towerlog if needed (else pulls main).
   3. Copies the source in, commits, pushes.
   4. Creates and pushes the version tag -> the "Build and upload TowerLog to
      TestFlight" workflow starts automatically on the tag push.
 
 .PARAMETER SourceDir
-  The extracted source folder. Defaults to E:\Downloads\towerlog-v1.0.2\towerlog
+  The extracted source folder. Defaults to E:\Downloads\towerlog-v1.0.3\towerlog
   when E:\Downloads exists, else your shell Downloads folder.
 
 .PARAMETER RepoDir
@@ -30,16 +30,16 @@
   powershell -ExecutionPolicy Bypass -File .\push-towerlog.ps1 -Tag v1.0.1
 #>
 param(
-    [string]$SourceDir = (Join-Path (& { if (Test-Path 'E:\Downloads') { 'E:\Downloads' } else { try { (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path } catch { "$env:USERPROFILE\Downloads" } } }) 'towerlog-v1.0.2\towerlog'),
+    [string]$SourceDir = (Join-Path (& { if (Test-Path 'E:\Downloads') { 'E:\Downloads' } else { try { (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path } catch { "$env:USERPROFILE\Downloads" } } }) 'towerlog-v1.0.3\towerlog'),
     [string]$RepoDir   = (Join-Path $env:USERPROFILE 'source\repos\mikegyver-towerlog'),
-    [string]$Tag       = 'v1.0.2'
+    [string]$Tag       = 'v1.0.3'
 )
 
 $ErrorActionPreference = 'Stop'
 $RepoSlug = 'MikeGyver-SME/mikegyver-towerlog'
 
 if (-not (Test-Path $SourceDir)) {
-    throw "Source folder not found: $SourceDir`nExtract towerlog-v1.0.2.zip first."
+    throw "Source folder not found: $SourceDir`nExtract towerlog-v1.0.3.zip first."
 }
 
 # --- 1. Clone or update ------------------------------------------------------
